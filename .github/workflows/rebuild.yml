@@ -1,0 +1,38 @@
+name: Rebuild dos artefatos
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency: rebuild-artefatos
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Sincronizar relatório de validação
+        run: python ferramentas/sincronizar_relatorio_validacao.py
+      - name: Converter Guia e gerar página
+        run: |
+          python ferramentas/guia_v2_para_json.py dados/Guia_de_Ofertas_Tratado_para_Validacao_V2_Escopo_Ampliado.xlsx
+          python build.py
+      - name: Testar
+        run: |
+          pytest -q
+          cmp -s "Abordagem assistida.html" publico/index.html
+      - name: Publicar artefatos regenerados
+        run: |
+          git config user.name "guia-rebuild"
+          git config user.email "guia-rebuild@users.noreply.github.com"
+          git add dados/Guia_de_Ofertas_Tratado_para_Validacao_V2_Escopo_Ampliado.xlsx \
+                  Guia_de_Ofertas_Tratado_para_Validacao_V2_Escopo_Ampliado.xlsx \
+                  dados/guia.json publico/index.html "Abordagem assistida.html"
+          git diff --cached --quiet || git commit -m "Rebuild dos artefatos do Guia"
+          git push
