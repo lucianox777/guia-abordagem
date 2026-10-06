@@ -725,7 +725,7 @@ function renderResult(){
   const nec = necessidades();
   const cobertas = new Set(pubs.flatMap(x=>NUC[x.p].necessidades));
   const flCobertos = new Set(pubs.flatMap(x=>NUC[x.p].fluxos));
-  const necRest = [...nec.entries()].filter(([id])=>!cobertas.has(id));
+  const necRest = [...nec.entries()];
   const flg = fluxosGuia(nec).filter(f=>!flCobertos.has(f));
   const used = new Set(proto ? ['156','CT','CREAS','SEAS'] : []);
   const walk = st => st.forEach(p=>{ (p.c||[]).forEach(c=>used.add(c)); if(p.yes){walk(p.yes);walk(p.no);} });
@@ -786,9 +786,9 @@ function renderResult(){
   ${order.filter(x=>used.has(x)).map(contatoHTML).join('')}
   </section>`:''}
 
-  ${necRest.length||flg.length?`<section class="blk"><h3>Outras necessidades identificadas</h3>
-  <p class="hint">Necessidades marcadas que não fazem parte do fluxo acima.</p>
-  ${necRest.map(([id,why])=>{const N=NEC[id]; return `<details class="need"><summary><b>${esc(N.nome)}</b><small>${esc([...why].join(', '))}</small></summary>
+  ${necRest.length||flg.length?`<section class="blk"><h3>Em paralelo: necessidades a encaminhar</h3>
+  <p class="hint">Cada necessidade abaixo tem porta de entrada e rede próprias e pode ser encaminhada ao mesmo tempo que as demais e que o atendimento acima. Camada do Guia de Ofertas.</p>
+  ${necRest.map(([id,why])=>{const N=NEC[id]; return `<details class="need"><summary><b>${esc(N.nome)}</b><small>${esc([...why].join(', '))}${cobertas.has(id)?' · também no fluxo acima':''}</small></summary>
     <div class="u-row"><span class="k">Porta de entrada</span><span>${N.porta?esc(N.porta):NA('Porta de entrada')}</span></div>
     <div class="u-row"><span class="k">Rede responsável</span><span>${N.rede?esc(N.rede):NA('Rede')}</span></div>
     ${!N.ofertas.length?`<div class="gapbox">Ofertas: "${esc(N.ofertasTxt||'')}". Não há uma lista de ofertas definida.</div>`:''}
