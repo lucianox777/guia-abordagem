@@ -25,7 +25,7 @@ jobs:
           python build.py
       - name: Testar
         run: |
-          pytest -q
+          python -m pytest -q
           cmp -s "Abordagem assistida.html" publico/index.html
       - name: Publicar artefatos regenerados
         run: |
