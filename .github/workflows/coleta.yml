@@ -1,0 +1,73 @@
+name: Coleta das páginas oficiais
+
+on:
+  schedule:
+    - cron: "0 9 * * *"        # todo dia às 06:00 (Brasília)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency: coleta
+
+jobs:
+  coletar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+
+      # 1) Regressão do CÓDIGO. Se falhar, o erro é nosso: nada é publicado.
+      - name: Testes do coletor
+        id: testes
+        run: pytest -q
+
+      # 2) Coleta + conformidade + monitoramento. Sai com 1 se a publicação for bloqueada.
+      - name: Converter o Guia de Ofertas consolidado
+        run: python ferramentas/guia_v2_para_json.py dados/Guia_de_Ofertas_Tratado_para_Validacao_V2_Escopo_Ampliado.xlsx
+
+      - name: Coletar, validar e comparar com a coleta anterior
+        id: coleta
+        run: python -m coletor.pipeline
+
+      - name: Atualizar o Banco Mestre e gerar a página auto-contida
+        run: python build.py
+
+      - name: Publicar dados, evidências e página
+        run: |
+          git config user.name "coletor-guia"
+          git config user.email "coletor-guia@users.noreply.github.com"
+          git add saida/ dados/app_base.json dados/base_unidades.json dados/guia.json publico/
+          git diff --cached --quiet || git commit -m "Coleta automática $(date -u +%F)"
+          git push
+
+      # 3) Avisos para pessoas diferentes
+      - name: Avisar Núcleo Técnico se alguma norma mudou
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const r = require('./saida/coleta.json');
+            const n = r.achados.filter(a => a.codigo === 'NORMA_ALTERADA');
+            if (n.length) await github.rest.issues.create({owner: context.repo.owner, repo: context.repo.repo,
+              title: `Norma alterada: revisar regras (${new Date().toISOString().slice(0,10)})`, labels: ['norma-alterada'],
+              body: n.map(x => `- ${x.pagina}\n  ${x.url}`).join('\n')});
+      - name: Avisar sobre erro do coletor
+        if: failure() && steps.testes.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({owner: context.repo.owner, repo: context.repo.repo, labels: ['erro-do-coletor'],
+              title: `Testes do coletor falharam (${new Date().toISOString().slice(0,10)})`,
+              body: 'O erro é do código, não das páginas. Nada foi publicado; a página continua com a coleta anterior.'});
+      - name: Avisar sobre publicação bloqueada
+        if: failure() && steps.coleta.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({owner: context.repo.owner, repo: context.repo.repo, labels: ['publicacao-bloqueada'],
+              title: `Coleta bloqueada (${new Date().toISOString().slice(0,10)})`,
+              body: 'Uma fonte perdeu unidades demais ou ficou indisponível. A página continua com a coleta anterior. Ver saida/conformidade.md e o log.'});

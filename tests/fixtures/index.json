@@ -1,0 +1,14 @@
+{
+ "https://prefeitura.sp.gov.br/web/assistencia_social/w/protecao_social_basica/1906": "cras_indice_1906.txt",
+ "https://prefeitura.sp.gov.br/web/assistencia_social/w/protecao_social_basica/330925": "cras_centro_330925.txt",
+ "https://prefeitura.sp.gov.br/web/assistencia_social/w/protecao_social_basica/330928": "cras_norte_330928.txt",
+ "https://prefeitura.sp.gov.br/web/assistencia_social/w/protecao_social_basica/330929": "cras_sul_330929.txt",
+ "https://prefeitura.sp.gov.br/web/assistencia_social/w/protecao_social_basica/330930": "cras_leste_330930.txt",
+ "https://prefeitura.sp.gov.br/web/assistencia_social/w/protecao_social_basica/330931": "cras_oeste_330931.txt",
+ "https://prefeitura.sp.gov.br/web/assistencia_social/w/protecao_social_especial/2003": "creas_indice_2003.txt",
+ "https://prefeitura.sp.gov.br/web/assistencia_social/w/protecao_social_especial/330935": "creas_sul_330935.txt",
+ "https://prefeitura.sp.gov.br/web/saude/w/saude_mental_ad/caps": "caps_indice_saude_mental_ad_caps.txt",
+ "https://prefeitura.sp.gov.br/web/saude/w/servi%C3%A7os-dos-centros-de-aten%C3%A7%C3%A3o-psicossocial-caps-por-territ%C3%B3rio": "caps_territorio_saude.txt",
+ "https://prefeitura.sp.gov.br/web/saude/w/epidemiologia_e_informacao/informacoes_assistenciais/30566": "sms_estabelecimentos_30566.txt",
+ "https://prefeitura.sp.gov.br/documents/d/saude/unid_munic_saude_sub_agosto2026": "sms_relacao_sub_agosto2026.txt"
+}

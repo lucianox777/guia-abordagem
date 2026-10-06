@@ -1,0 +1,88 @@
+# Fontes oficiais usadas pelo assistente de abordagem.
+# Regra: só entram links com uso direto na aplicação. A página oficial é a evidência;
+# o job arquiva o hash (e a cópia, quando o conteúdo muda) de cada leitura.
+# O job NÃO corrige dados: publica como está e devolve as inconformidades à secretaria.
+versao: 3
+agente_http: "PMSP-SEPE-Guia-Coletor/0.2 (+contato a definir)"
+
+servicos:
+  - id: smads-cras
+    secretaria: SMADS
+    oferta: OF001
+    indice: https://prefeitura.sp.gov.br/web/assistencia_social/w/protecao_social_basica/1906
+    padrao_filhas: "/protecao_social_basica/\\d+$"
+    total_declarado: "há\\s+\\**\\s*(\\d+)\\s+unidades de CRAS"
+    prefixo_unidade: CRAS
+    campos_obrigatorios: [endereco, telefone, horario, email]
+    uso_no_app: "Rede do território (proteção social básica, Cadastro Único, benefícios)"
+
+  - id: smads-creas
+    secretaria: SMADS
+    oferta: OF002
+    indice: https://prefeitura.sp.gov.br/web/assistencia_social/w/protecao_social_especial/2003
+    padrao_filhas: "/protecao_social_especial/\\d+$"
+    total_declarado: "há\\s+\\**\\s*(\\d+)\\s+unidades de CREAS"
+    prefixo_unidade: CREAS
+    campos_obrigatorios: [endereco, telefone, horario, email]
+    uso_no_app: "Protocolo: encaminhamento ao CREAS de referência, relatório ao CREAS"
+
+  - id: sms-caps
+    secretaria: SMS
+    indice: https://prefeitura.sp.gov.br/web/saude/w/saude_mental_ad/caps
+    padrao_filhas: "caps-por-territ"
+    total_declarado: "conta atualmente com\\s+(\\d+)\\s+CAPS"
+    prefixo_unidade: CAPS
+    regioes: [CENTRO, LESTE, NORTE, OESTE, SUDESTE, SUL]
+    oferta_por_prefixo: {"CAPS IJ": OF015, "CAPS AD": OF048, "CAPS ADULTO": OF047}
+    campos_obrigatorios: [endereco, telefone, email]     # a página não publica horário
+    uso_no_app: "Protocolo: fluxo de álcool e outras drogas (CAPS AD, CAPSij)"
+
+  - id: sms-estabelecimentos
+    secretaria: SMS
+    indice: https://prefeitura.sp.gov.br/web/saude/w/epidemiologia_e_informacao/informacoes_assistenciais/30566
+    padrao_filhas: "unid_munic_saude_sub_"          # só a relação por Subprefeitura (traz o território)
+    parser: pdf_relacao_sms
+    titulo_publicacao: "Relação dos estabelecimentos da SMS por subprefeitura (CEInfo, PDF)"
+    somente_mapeadas: true                           # só entram tipos usados no app
+    oferta_por_prefixo: {"CAPS AD": OF048, "CAPS INFANTOJUVENIL": OF015, "CAPS ADULTO": OF047,
+                         "UBS": OF016, "AMA/UBS": OF016, "UBSI": OF016, "UPA": OF018,
+                         "HOSPITAL MUNICIPAL": OF083, "AMA": OF078}
+    campos_obrigatorios: [endereco, telefone]
+    opcoes_validacao: {ddd_implicito: "11", endereco_compartilhado_ok: true}   # formato próprio desta publicação
+    uso_no_app: "Protocolo: UBS do território, CAPS, UPA/hospitais; subprefeitura de cada unidade"
+
+# Legislação que fundamenta as REGRAS do app. O job só detecta mudança de texto (hash)
+# e avisa o Núcleo Técnico para revisar regras.json. Nada é interpretado automaticamente.
+normas:
+  - id: lei-17923-2023
+    titulo: "Lei nº 17.923/2023 — Política Municipal de Atenção Integral a Crianças e Adolescentes em Situação de Rua e na Rua"
+    url: https://legislacao.prefeitura.sp.gov.br/leis/lei-17923-de-10-de-abril-de-2023
+    responsavel: Núcleo Técnico / Programa Reencontro (SEPE)
+  - id: decreto-63439-2024
+    titulo: "Decreto nº 63.439/2024 — regulamenta a Lei 17.923/2023 (texto consolidado)"
+    url: https://legislacao.prefeitura.sp.gov.br/decreto-63439-de-23-de-maio-de-2024/consolidado
+    responsavel: Núcleo Técnico / Programa Reencontro (SEPE)
+  - id: nt-smads-7-2024
+    titulo: "Nota Técnica SMADS nº 7/2024 — Núcleo de Convivência para Crianças e Adolescentes (NCA)"
+    url: https://legislacao.prefeitura.sp.gov.br/nota-tecnica-secretaria-municipal-de-assistencia-e-desenvolvimento-social-smads-7-de-20-de-dezembro-de-2024
+    responsavel: SMADS
+
+# Links da planilha que NÃO entram (sem uso direto na aplicação). Mantidos aqui para rastreabilidade.
+descartadas:
+  - {url: "https://prefeitura.sp.gov.br/web/meio_ambiente/w/parques/326939", motivo: "Parques: fora do escopo do protocolo"}
+  - {url: "https://prefeitura.sp.gov.br/web/esportes/w/pistas-de-skate-da-seme", motivo: "Skate: fora do escopo do protocolo"}
+  - {url: "https://prefeitura.sp.gov.br/meio_ambiente/umapaz/umapaz_na_cidade/", motivo: "Educação ambiental: fora do escopo"}
+  - {url: "viveiros / planetário / programação UMAPAZ", motivo: "Fora do escopo"}
+  - {url: "https://buscasaude.prefeitura.sp.gov.br/", motivo: "Aplicação dinâmica. Substituído pela relação em PDF da mesma página da SMS (sms-estabelecimentos)"}
+  - {url: "mapas de subprefeituras e distritos", motivo: "Não são listas. Usar malha oficial de distritos (GeoSampa) como arquivo versionado"}
+
+# Pendentes: têm uso potencial, mas ainda não foram inspecionados.
+pendentes:
+  - https://prefeitura.sp.gov.br/web/assistencia_social/w/rede_socioassistencial/criancas_e_adolescentes/3181
+  - https://prefeitura.sp.gov.br/web/assistencia_social/w/rede_socioassistencial/3200
+  - https://prefeitura.sp.gov.br/web/saude/w/coordenadorias-regionais-de-saude-e-supervisao-tecnica-de-saude
+  - https://transparencia.educacao.sp.gov.br/Home/MapaDeEscolasPorDiretoria
+
+publicacao:
+  queda_maxima_por_fonte: 0.3
+  idade_maxima_pagina_dias: 180

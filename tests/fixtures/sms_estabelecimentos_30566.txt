@@ -1,0 +1,14 @@
+## Estabelecimentos e Serviços de Saúde
+Núcleo de Informação de Assistência à Saúde - NIAS/CEInfo
+Quinta-feira, 17 de Setembro de 2026 | Horário: 13:29
+**Aplicativo de Busca de localização dos Estabelecimentos de Saúde**
+- [BuscaSaúde](http://buscasaude.prefeitura.sp.gov.br/)
+**Número de Estabelecimentos/Serviços da SMS**
+- [Coordenadoria Regional de Saúde*](https://prefeitura.sp.gov.br/documents/d/saude/n_estabservicos_crs_agosto2026) (agosto/2026)
+- [Subprefeitura](https://prefeitura.sp.gov.br/documents/d/saude/n_estabservicos_crs_subprefeitura_agosto2026)* (agosto/2026)
+**Relação dos Estabelecimentos/Serviços da SMS**
+- [Coordenadoria Regional de Saúde e Supervisão Técnica de Saúde*](https://prefeitura.sp.gov.br/documents/d/saude/unid_munic_saude_super_agosto2026) (agosto/2026)
+- [Subprefeitura*](https://prefeitura.sp.gov.br/documents/d/saude/unid_munic_saude_sub_agosto2026) (agosto/2026)
+- [Região/Zona*](https://prefeitura.sp.gov.br/documents/d/saude/unid_munic_saude_zona_agosto2026) (agosto/2026)
+* Arquivos no **formato PDF**.
+*collections*
