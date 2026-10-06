@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Abordagem assistida</title>
@@ -155,6 +154,12 @@ h4.sub{margin:1.3rem 0 .3rem}
 .g-ini{background:color-mix(in srgb,var(--plum-2) 8%,var(--card));border-left:4px solid var(--plum-2);padding:.5rem .7rem;margin:.6rem 0;border-radius:4px}
 .g-ini p{margin:.2rem 0}
 .tag{display:inline-block;font-size:.72rem;font-weight:700;padding:0 .35rem;border-radius:4px;background:var(--line);color:var(--ink);cursor:help}
+.gcard .steps>li ul{margin:.25rem 0 0;padding-left:1.1rem}
+.gcard .steps>li>b{display:block}
+.passos-t{margin:.8rem 0 0}
+.chips.big{display:flex;flex-wrap:wrap;gap:.4rem}
+.par-t{margin:.8rem 0 .2rem;font-weight:600}
+.flow.par,.gcard.par{border-left:4px solid var(--plum-2,#7b4b94)}
 </style></head><body>
 <header class="top"><div class="in"><h1>Abordagem assistida</h1><p>Protocolo Integrado (SEAS · eCR · GCM) e Guia de Ofertas consolidado</p></div></header>
 <div class="proto"><div class="in">Este é um protótipo para validação. As regras vêm do Protocolo Integrado e do Guia de Ofertas consolidado (todos os registros a validar). As unidades vêm do Banco Mestre, atualizado pelas páginas oficiais. Não use esta ferramenta como única fonte em um atendimento real.</div></div>
@@ -244,8 +249,18 @@ function publicos(){
     if (S.acomp==='sim' && rua) add('Família com crianças em situação de rua', 'acompanhada por adulto e em situação de rua');
     if (S.outras.has('moradia')) add('Família com crianças sem moradia', 'família sem moradia');
     if (S.outras.has('imigr')) add('Família imigrante com crianças', 'família imigrante ou refugiada');
+    if (S.acomp==='sim'){
+      if (pf.has('mulher')) add('Mulher com criança(s)', 'adulta que acompanha é mulher');
+      if (rua && pf.has('gestante')) add('Gestante em situação de rua', 'adulta que acompanha está gestante e em situação de rua');
+      if (rua && pf.has('puerpera')) add('Puérpera/lactante em situação de rua', 'adulta que acompanha é puérpera ou lactante, em situação de rua');
+      if (rua && pf.has('pcd')) add('Pessoa com deficiência em situação de rua', 'adulto que acompanha tem deficiência');
+      if (pf.has('idosa')) add(rua ? 'Pessoa idosa em situação de rua' : 'Pessoa idosa', 'adulto que acompanha é idoso');
+      if (pf.has('lgbt')) add('Pessoa LGBTQIA+ adulta', 'adulto que acompanha é LGBTQIA+');
+      if (pf.has('imigr')) add('Imigrante/refugiado', 'adulto que acompanha é imigrante ou refugiado');
+    }
     if (S.desap==='sim') add('Pessoa desaparecida', 'desaparecimento');
-    if (!out.length) add(S.acomp==='sim' ? 'Criança/adolescente e família' : 'Criança/adolescente', S.acomp==='sim' ? 'criança ou adolescente com a família' : 'criança ou adolescente');
+    // Sem público específico e sem situação marcada: fluxo padrão (FL20). Com situação marcada, vale o fluxo da situação.
+    if (!out.length && !(S.sit.size || S.outras.size)) add(S.acomp==='sim' ? 'Criança/adolescente e família' : 'Criança/adolescente', S.acomp==='sim' ? 'nenhuma situação específica foi marcada (fluxo padrão)' : 'nenhuma situação específica foi marcada (fluxo padrão)');
   } else if (ehAdulto()){
     if (rua && pf.has('gestante')) add('Gestante em situação de rua', 'gestante em situação de rua');
     if (rua && pf.has('puerpera')) add('Puérpera/lactante em situação de rua', 'puérpera ou lactante em situação de rua');
@@ -467,23 +482,109 @@ function fluxoAmeaca(){
   return {id:'ameaca', t:'Ameaça de morte', pag:'p. 10', st};
 }
 
+/* Fluxo geral sem as etapas de acolhimento e risco, que ficam no fluxo único */
+function geralSemAcolhimento(){
+  const ag=S.agente, st=[], acomp=S.acomp==='sim';
+  const ref = {k:'n',txt:'Acolhimento e avaliação de risco: seguir o fluxo único acima.'};
+  if (acomp){
+    if (ag==='SEAS') st.push(A('Apresentar a importância do acesso ao acolhimento e aos demais serviços'), ref);
+    else if (ag==='eCR'){
+      st.push(A('Apresentar os serviços da rede'), A('Acionar o SEAS e aguardar',['156','SEAS']));
+      st.push({k:'if',cond:'O SEAS está impossibilitado, ou é impossível aguardar no local?',
+        yes:[A('Acionar e encaminhar ao CREAS',['CREAS']), A('Ações do CREAS/Centro POP',['CREAS','POP'])], no:[A('Seguir o procedimento SEAS',['SEAS'])]});
+    } else st.push(A('Acionar o SEAS e aguardar sua chegada',['156','SEAS']));
+  } else if (ag==='SEAS'){
+    st.push(...br(S.desap,'É desaparecimento?',[A('Acionar e encaminhar ao CREAS para avaliação de outras violações',['CREAS']), CTMP()],
+      br(S.evasao,'É evasão de SAICA?',[A('Contatar a Central de Vagas para retorno ao SAICA de origem',['CV','CPAS']), CTMP()],[ref])));
+  } else if (ag==='eCR'){
+    st.push(...br(S.desap,'É desaparecimento?',[A('Contatar o SEAS e/ou encaminhar ao CREAS para avaliação de outras violações',['SEAS','156','CREAS']), CTMP()],
+      [A('Informar sobre a importância do acolhimento e apresentar a rede'), ref]));
+  } else {
+    const hc = horarioComercial();
+    st.push(...br(S.desap,'É desaparecimento?',[A('Contatar o SEAS e/ou encaminhar ao CREAS para avaliação de outras violações',['SEAS','156','CREAS']), CTMP()],
+      br(hc===null?null:(hc?'sim':'nao'),'Está em horário comercial?',
+        [A('Acionar o SEAS e/ou encaminhar ao CREAS',['156','SEAS','CREAS'])],
+        [A('Contatar o CPAS e aguardar a chegada',['156','CPAS']), A('Procedimentos SEAS/CPAS')])));
+  }
+  return {id:'geral', t: acomp?'Fluxo geral · acompanhado(a)':'Fluxo geral · desacompanhado(a)', pag:'p. 5', st, par:true};
+}
+/* Passos próprios de cada fluxo específico (o que não é comum aos demais) */
+function especifico(id){
+  const st=[], ag=S.agente;
+  if (id==='saude'){
+    if (ag!=='eCR'){ st.push(A('Acionar a eCR ou a UBS do território',['ECR','UBS'])); st.push(WHO('Os próximos passos de atendimento são da eCR/UBS.')); }
+    st.push(A('Promover o atendimento conforme os procedimentos adequados'));
+    st.push(A('Notificar o Conselho Tutelar, enviando relatório sobre as condições de saúde e o atendimento',['CT']));
+    if (S.sit.has('enfermidade')) st.push({k:'n',txt:'Tabela de riscos: se houver recusa de atendimento em caso de enfermidade, notificar a VIJ.',c:['VIJ']});
+    return {id, t:'Comprometimento de saúde', pag:'p. 8', st, par:true};
+  }
+  if (id==='sexual'){
+    if (ag==='GCM') st.push(SIM('Adotar medidas legais em relação ao(à) autor(a)/suspeito(a) da violência, se houver',['POL']));
+    if (ag==='eCR') st.push(A('Efetuar atendimento de saúde, caso necessário'));
+    if (S.acomp==='sim') st.push(SIM('Se o adulto que acompanha for o(a) autor(a)/suspeito(a) da violência, ele(a) será acolhido(a) separadamente'));
+    if (!st.length) st.push({k:'n',txt:'Sem passos próprios além do fluxo único.'});
+    return {id, t:'Violência e exploração sexual', pag:'p. 7', st, par:true};
+  }
+  if (id==='ameaca'){
+    if (ag==='GCM') st.push(SIM('Caso necessário ou solicitado, permanecer e acompanhar o atendimento para garantir a segurança'));
+    st.push(SIM('Se houver acolhimento e for necessário, acionar o PPCAAM (Programa de Proteção a Crianças e Adolescentes Ameaçados de Morte)',['PPCAAM']));
+    return {id, t:'Ameaça de morte', pag:'p. 10', st, par:true};
+  }
+  if (id==='drogas'){
+    st.push(A('Se não houver acolhimento: acionar os demais equipamentos do caso e traçar estratégias, em especial CAPS, eCR e SEAS',['CAPS','ECR','SEAS']));
+    return {id, t:'Álcool e outras drogas', pag:'p. 6', st, par:true};
+  }
+  if (id==='ato'){
+    if (ag==='GCM'){
+      st.push(A('Adotar as medidas legais pertinentes',['POL']));
+      if (S.idade==='adolescente') st.push({k:'n',txt:'É adolescente.'}, A('Acionar a autoridade policial e informar a situação de rua do(a) adolescente e as ofertas de políticas públicas disponíveis, como o acolhimento socioassistencial',['POL']));
+      else st.push({k:'n',txt:'É criança.'});
+    } else if (ag==='eCR') st.push(GAP('O fluxograma de ato infracional não prevê nenhuma ação para a eCR. O protótipo sugere acionar o SEAS, mas isso precisa ser validado.'));
+    else st.push({k:'n',txt:'Sem passos próprios além do fluxo único.'});
+    return {id, t:'Ato infracional', pag:'p. 9', st, par:true};
+  }
+}
+/* Fluxo único: etapas que se repetem nos fluxogramas (acionar SEAS, avaliação do abordador, acolhimento, notificações) */
+function fluxoUnico(ids){
+  const st=[], ag=S.agente, has=x=>ids.includes(x);
+  if (S.emerg==='sim') st.push(PRIO('Caso de urgência: chamar o SAMU e aguardar',['SAMU']));
+  const precisaSEAS = ag!=='SEAS' && (has('sexual')||has('ameaca')||(has('drogas')&&ag==='GCM')||(has('ato')&&(ag==='eCR'||(ag==='GCM'&&S.idade==='crianca'))));
+  if (precisaSEAS){ st.push(A('Acionar SEAS/CPAS via 156 e aguardar a chegada',['156','SEAS','CPAS'])); st.push(WHO('Depois da chegada, o SEAS segue os passos abaixo.')); }
+  st.push(A('Avaliação do abordador: analisar o contexto individual, avaliando riscos e alternativas, para possíveis encaminhamentos à rede municipal'));
+  st.push(...br(S.necessita,'Necessita de acolhimento?',
+    [A('Contatar e seguir o procedimento SEAS/CPAS de acolhimento',['156','CPAS'])],
+    [{k:'n',txt:'Sem acolhimento: seguir os fluxos específicos abaixo.'}]));
+  const fim = CTMP(has('sexual')||has('ameaca') ? '. Se houver inserção no PPCAAM, informar também a Defensoria Pública e a Vara da Infância e Juventude' : '');
+  if (has('sexual')||has('ameaca')) fim.c=['CT','MP','PPCAAM','DEF','VIJ'];
+  st.push(fim);
+  if (has('saude')||has('ato')) st.push(REL());
+  return {id:'unico', t:'Fluxo único · etapas em comum', pag:'p. 5–10', st};
+}
+
 function montarFluxos(){
-  const F=[], gaps=[];
+  const gaps=[];
   const esp = [];
-  if (S.emerg==='sim' || S.sit.has('enfermidade')) esp.push(fluxoSaude());
-  if (S.sit.has('viol_sexual') || S.sit.has('explor_sexual')) esp.push(fluxoSexual());
-  if (S.sit.has('ameaca')) esp.push(fluxoAmeaca());
-  if (S.sit.has('spa_crianca')) esp.push(fluxoDrogas());
-  if (S.sit.has('ato')) esp.push(fluxoAto());
+  if (S.emerg==='sim' || S.sit.has('enfermidade')) esp.push('saude');
+  if (S.sit.has('viol_sexual') || S.sit.has('explor_sexual')) esp.push('sexual');
+  if (S.sit.has('ameaca')) esp.push('ameaca');
+  if (S.sit.has('spa_crianca')) esp.push('drogas');
+  if (S.sit.has('ato')) esp.push('ato');
   const semFluxo = ['viol_fis_p','viol_fis_s','viol_psico','trabalho'].filter(k=>S.sit.has(k));
-  if (S.flag==='sim'){
-    if (!esp.length){
-      gaps.push('Há flagrante, mas as situações marcadas não têm fluxograma específico no protocolo. Por isso, o protótipo aplicou o fluxo geral.');
-      F.push(fluxoGeral());
-    }
-  } else F.push(fluxoGeral());
+  let geral = S.flag!=='sim';
+  if (S.flag==='sim' && !esp.length){
+    gaps.push('Há flagrante, mas as situações marcadas não têm fluxograma específico no protocolo. Por isso, o protótipo aplicou o fluxo geral.');
+    geral = true;
+  }
+  let F;
+  if (!esp.length) F = [fluxoGeral()];                                   // nenhum fluxo específico: fluxo padrão
+  else if (esp.length===1 && !geral) F = [{saude:fluxoSaude,sexual:fluxoSexual,ameaca:fluxoAmeaca,drogas:fluxoDrogas,ato:fluxoAto}[esp[0]]()];
+  else {                                                                  // vários fluxos: etapas em comum num só e o restante em paralelo
+    F = [fluxoUnico(esp), ...esp.map(especifico)];
+    if (geral) F.push(geralSemAcolhimento());
+    gaps.push('Fluxo único montado pelo protótipo: as etapas que se repetem nos fluxogramas do protocolo (acionar SEAS/CPAS, avaliação do abordador, acolhimento e notificações) foram reunidas num só bloco. Essa unificação não está no protocolo e precisa ser validada.');
+  }
   if (semFluxo.length) gaps.push(`O protocolo não tem fluxograma específico para: ${semFluxo.map(k=>RISCO[k].l.toLowerCase()).join(', ')}. Elas entram na pontuação de risco e nas ofertas do Guia (FL04/FL09).`);
-  return {F:[...esp, ...F], gaps};
+  return {F, gaps};
 }
 
 /* ---------- Necessidades (camada Guia de Ofertas) ---------- */
@@ -629,6 +730,7 @@ const SCREENS = [
    <h3 class="q">Idade</h3><div class="opts three">${opt('idade','crianca','Criança','Até 11 anos')}${opt('idade','adolescente','Adolescente','De 12 a 17 anos')}${opt('idade','adulto','Adulto(a)','18 anos ou mais')}</div>
    <p class="hint">O corte segue o ECA, art. 2º. ${ehAdulto()?'O Protocolo Integrado e a graduação de risco são para crianças e adolescentes. Para adultos, vale o Guia de Ofertas consolidado (escopo ampliado).':''}</p>
    ${ehCrianca()?`<h3 class="q">Está com um adulto responsável?</h3><div class="opts two">${opt('acomp','sim','Acompanhado(a)')}${opt('acomp','nao','Desacompanhado(a)')}</div>`:''}
+   ${ehCrianca()&&S.acomp==='sim'?`<h3 class="q">Perfil do adulto que acompanha</h3><p class="hint">Marque o que se aplica. Define se entra também o fluxo de mulher com criança, gestante, pessoa com deficiência etc.</p>${Object.entries(PERFIL).filter(([k])=>k!=='comcria').map(([k,l])=>chk('perfil',k,l)).join('')}`:''}
    ${ehAdulto()?`<h3 class="q">Perfil</h3><p class="hint">Marque o que se aplica. Define qual fluxo do Guia de Ofertas vale.</p>${Object.entries(PERFIL).map(([k,l])=>chk('perfil',k,l)).join('')}`:''}
    ${S.idade?`<h3 class="q">Está em situação de rua (usa a rua como moradia)?</h3><div class="opts three">${opt('rua','sim','Sim')}${opt('rua','nao','Não')}${opt('rua','nsei','Não sei')}</div>
    <h3 class="q">É desaparecimento?</h3><div class="opts three">${opt('desap','sim','Sim')}${opt('desap','nao','Não')}${opt('desap','nsei','Não sei')}</div>`:''}
@@ -706,7 +808,9 @@ function nucleoHTML({p, por}){
     <div class="u-row"><span class="k">Necessidade</span><span>${n.necessidades.map(x=>`<span class="tag" title="${esc(nomeTag(x))}">${x}</span> ${esc(NEC[x]?.nome||'')}`).join(' · ') || esc(n.necessidade_txt||'')}</span></div>
     <div class="u-row"><span class="k">Fluxo</span><span>${n.fluxos.length?n.fluxos.map(f=>`<span class="tag">${f}</span> ${esc(FLU[f]?.situacao||'')}`).join(' · '):'<span class="na">Sem fluxo específico no Banco Mestre</span>'}</span></div>
     ${S.agente==='OUTRO' ? `<div class="g-ini"><h5>Orientação inicial para ${esc(ORG[S.orgao]||'')}</h5>${po&&po.fluxo_inicial?`<p>${esc(po.fluxo_inicial)}</p><p class="src-l">Texto original da planilha, registro ${esc(po.registro)} (aba ${esc(po.orgao)}, linha ${esc(po.linha)}).</p>`:`<div class="gapbox">A planilha não tem fluxo para ${esc(ORG[S.orgao]||'este órgão')} neste público. O restante do fluxo abaixo é o mesmo para todos os órgãos.</div>`}</div>` : ''}
-    ${CAMPOS_G.map(([c,l])=>{const gs=segsDo(n,c); return `<div class="g-campo"><h5>${l}</h5>${gs.length?`<ul>${gs.map(segHTML).join('')}</ul>`:NA(l)}</div>`}).join('')}
+    <h5 class="passos-t">Passo a passo</h5>
+    <ol class="steps">${CAMPOS_G.filter(([c])=>c!=='base').map(([c,l])=>{const gs=segsDo(n,c); return `<li class="s-a"><b>${l}</b>${gs.length?`<ul>${gs.map(segHTML).join('')}</ul>`:`<div>${NA(l)}</div>`}</li>`}).join('')}</ol>
+    ${(()=>{const gs=segsDo(n,'base'); return `<div class="g-campo"><h5>Base normativa</h5>${gs.length?`<ul>${gs.map(segHTML).join('')}</ul>`:NA('Base normativa')}</div>`})()}
     ${n.nao_mapeados.length?`<div class="gapbox">Citados na planilha original, sem oferta equivalente no Banco Mestre: <b>${esc(n.nao_mapeados.join(', '))}</b>. Endereço e telefone não disponíveis.</div>`:''}
     ${ofsUnid.length?`<details class="more" open><summary>Unidades no território</summary>${unidadesHTML(ofsUnid,3)}</details>`:''}
     ${ofsSem.length?`<p class="hint">Sem unidade cadastrada no Banco Mestre: ${ofsSem.map(o=>esc(OFE[o]?.nome||o)).join(', ')}.</p>`:''}
@@ -715,6 +819,13 @@ function nucleoHTML({p, por}){
   </article>`;
 }
 function linkify(t){ return esc(t).replace(/https?:\/\/[^\s|]+/g, u=>`<a href="${u}" target="_blank" rel="noopener">${u.replace(/^https?:\/\//,'').slice(0,60)}…</a>`).replace(/ \| /g,'<br>'); }
+function fluxoSitHTML(f){
+  const x=FLU[f];
+  const campos=[['Fluxo inicial',x.fluxo],['Risco imediato',x.risco],['Primeira porta',x.porta],['Serviço de referência',x.referencia],['Próximo passo',x.proximo],['Contrarreferência',x.contra]];
+  return `<article class="gcard par"><header><h4><span class="tag">${f}</span> ${esc(x.situacao)}</h4><span class="badge st-${(x.status||'').toLowerCase().replace(/\s/g,'-')}">${esc(x.status||'')}</span></header>
+    <ol class="steps">${campos.map(([a,b])=>`<li class="s-a"><b>${a}</b><div>${b?esc(b):NA(a)}</div></li>`).join('')}</ol>
+    <div class="g-campo"><h5>Base normativa</h5><p>${x.base?esc(x.base):NA('Base normativa')}</p></div></article>`;
+}
 
 /* ---------- Resultado ---------- */
 function renderResult(){
@@ -726,8 +837,9 @@ function renderResult(){
   const nec = necessidades();
   const cobertas = new Set(pubs.flatMap(x=>NUC[x.p].necessidades));
   const flCobertos = new Set(pubs.flatMap(x=>NUC[x.p].fluxos));
-  const necRest = [...nec.entries()].filter(([id])=>!cobertas.has(id));
-  const flg = fluxosGuia(nec).filter(f=>!flCobertos.has(f));
+  const necRest = [...nec.entries()];
+  const flgTodos = fluxosGuia(nec).filter(f=>!flCobertos.has(f));
+  const flgPrinc = pubs.length ? [] : flgTodos, flg = pubs.length ? flgTodos : [];
   const used = new Set(proto ? ['156','CT','CREAS','SEAS'] : []);
   const walk = st => st.forEach(p=>{ (p.c||[]).forEach(c=>used.add(c)); if(p.yes){walk(p.yes);walk(p.no);} });
   F.forEach(f=>walk(f.st));
@@ -764,13 +876,17 @@ function renderResult(){
   ${proto&&(k.cls==='n3'||k.cls==='n2')&&S.risco==='nao'?`<div class="gapbox"><b>Atenção:</b> a tabela classificou o risco como ${k.nivel}, mas a equipe respondeu que não existe risco. O fluxo seguiu a resposta da equipe. Revise essa resposta antes de agir.</div>`:''}
   ${S.emerg==='sim'?`<div class="samu big"><p>Antes de tudo: chame o SAMU.</p><a href="tel:192">192</a></div>`:''}
 
+  ${used.size?`<section class="blk acionar"><h3>Órgãos a acionar</h3><p class="hint">Reunidos de todos os fluxos abaixo. Os contatos estão mais adiante.</p><div class="chips big">${CHIP(order.filter(x=>used.has(x)))}</div></section>`:''}
+
   ${proto?`<section class="blk"><h3>Faça agora</h3>
-  ${F.map(f=>`<article class="flow"><header><h4>${esc(f.t)}</h4><span class="pg">Protocolo, ${f.pag}</span></header>${passosHTML(f.st)}</article>`).join('')}
+  ${F.map((f,i)=>`${f.par&&!F[i-1]?.par?'<p class="hint par-t">Fluxos paralelos e independentes: podem ser conduzidos ao mesmo tempo, sem depender um do outro.</p>':''}<article class="flow${f.par?' par':''}"><header><h4>${esc(f.t)}</h4><span class="pg">${f.par?'Paralelo · ':''}Protocolo, ${f.pag}</span></header>${passosHTML(f.st)}</article>`).join('')}
   </section>`:''}
 
   <section class="blk"><h3>${proto?'Depois do primeiro atendimento':'Fluxo a seguir'}</h3>
   <p class="hint">Guia de Ofertas consolidado (${esc(G.fonte||'')}), normalizado ao Banco Mestre. Todos os registros estão marcados como “necessita validação”.</p>
-  ${pubs.length?pubs.map(nucleoHTML).join(''):'<div class="gapbox">Nenhum fluxo do Guia de Ofertas corresponde às respostas.</div>'}
+  ${pubs.length?pubs.map(nucleoHTML).join(''):''}
+  ${flgPrinc.length?`<p class="why">Fluxos escolhidos pelas situações identificadas, em paralelo e independentes:</p>${flgPrinc.map(fluxoSitHTML).join('')}`:''}
+  ${!pubs.length&&!flgPrinc.length?'<div class="gapbox">Nenhum fluxo do Guia de Ofertas corresponde às respostas.</div>':''}
   </section>
 
   ${crianca?`<section class="blk"><h3>Graduação de risco</h3>
@@ -787,9 +903,9 @@ function renderResult(){
   ${order.filter(x=>used.has(x)).map(contatoHTML).join('')}
   </section>`:''}
 
-  ${necRest.length||flg.length?`<section class="blk"><h3>Outras necessidades identificadas</h3>
-  <p class="hint">Necessidades marcadas que não fazem parte do fluxo acima.</p>
-  ${necRest.map(([id,why])=>{const N=NEC[id]; return `<details class="need"><summary><b>${esc(N.nome)}</b><small>${esc([...why].join(', '))}</small></summary>
+  ${necRest.length||flg.length?`<section class="blk"><h3>Em paralelo: necessidades a encaminhar</h3>
+  <p class="hint">Cada necessidade abaixo tem porta de entrada e rede próprias e pode ser encaminhada ao mesmo tempo que as demais e que o atendimento acima. Camada do Guia de Ofertas.</p>
+  ${necRest.map(([id,why])=>{const N=NEC[id]; return `<details class="need"><summary><b>${esc(N.nome)}</b><small>${esc([...why].join(', '))}${cobertas.has(id)?' · também no fluxo acima':''}</small></summary>
     <div class="u-row"><span class="k">Porta de entrada</span><span>${N.porta?esc(N.porta):NA('Porta de entrada')}</span></div>
     <div class="u-row"><span class="k">Rede responsável</span><span>${N.rede?esc(N.rede):NA('Rede')}</span></div>
     ${!N.ofertas.length?`<div class="gapbox">Ofertas: "${esc(N.ofertasTxt||'')}". Não há uma lista de ofertas definida.</div>`:''}
@@ -824,13 +940,13 @@ function renderResult(){
 /* ---------- Painel de qualidade da base ---------- */
 (function(){
   const a=D.statsAll, p=x=>Math.round(100*x/a.total)+'%';
-  $('#qual').innerHTML = `<h3>Qualidade da base (Banco Mestre, arquivo V0.8)</h3><ul>
+  $('#qual').innerHTML = `<h3>Qualidade da base (Banco Mestre${D.versao?' · '+esc(D.versao):''})</h3><ul>
    <li><b>${a.total.toLocaleString('pt-BR')}</b> unidades cadastradas. Nenhuma está "VERIFICADA": ${a.emVal.toLocaleString('pt-BR')} estão em validação e ${a.naoConf.toLocaleString('pt-BR')} não foram confirmadas.</li>
    <li>${a.semDist.toLocaleString('pt-BR')} (${p(a.semDist)}) estão sem distrito, e ${a.semSub.toLocaleString('pt-BR')} (${p(a.semSub)}) estão sem subprefeitura.</li>
    <li>Só ${a.comHor} (${p(a.comHor)}) têm horário de funcionamento. ${a.semTel.toLocaleString('pt-BR')} (${p(a.semTel)}) estão sem telefone.</li>
    <li>${a.tel2696.toLocaleString('pt-BR')} unidades compartilham o mesmo telefone, (11) 2696-3200.</li>
    <li>Sem nenhuma unidade cadastrada: CPAS, Central de Vagas, Consultório na Rua, NCA, Casa Temporária, Centro POP, Ministério Público, Defensoria, Vara da Infância, delegacias e PPCAAM.</li>
-   <li>O painel da planilha diz "${esc(D.versao||'')}", mas o arquivo é a V0.8.</li></ul>
+   <li>Versão declarada no painel do Banco Mestre: <b>${esc(D.versao||'não informada')}</b>.</li></ul>
    <h3>Fontes oficiais lidas pelo job</h3>
    <p>Última coleta: ${fdata(C.data_coleta)||'nenhuma'}${C.modo==='offline'?' (teste com páginas salvas)':''}. A evidência de cada dado é a página oficial, com a data em que a secretaria a atualizou e a data em que o job a leu. Só é reprocessado o que mudou. O job não corrige dados: publica como está e devolve as inconformidades à secretaria.</p>
    <div class="tw"><table class="rt"><thead><tr><th>Serviço</th><th>Total declarado</th><th>Lidas</th><th>Páginas</th></tr></thead><tbody>
@@ -845,4 +961,3 @@ function renderResult(){
 
 render();
 </script></body></html>
-</body></html>
