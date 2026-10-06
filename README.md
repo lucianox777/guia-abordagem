@@ -6,6 +6,7 @@ Job agendado (GitHub Actions) que mantém o assistente de abordagem alinhado às
 - **A página oficial é a fonte.** A evidência de cada dado é a própria página, com duas datas: quando a secretaria a atualizou e quando o job a leu.
 - **Coleta incremental.** O job pede as páginas com GET condicional (ETag/Last-Modified) e compara o conteúdo com a última leitura (hash interno em `saida/cache.json`). Só reprocessa o que mudou.
 - **O Banco Mestre auto-contido é sempre atualizado** com o conteúdo das páginas (`build.py`): `dados/app_base.json` (embutido no HTML) e `saida/Banco_Mestre_Unidades_atualizado.xlsx` (para a equipe do Guia), com colunas de fonte, datas e divergências.
+- **A página tem uma única fonte de geração.** `build.py` grava o mesmo HTML em `publico/index.html` e `Abordagem assistida.html`, evitando cópias divergentes.
 - **O coletor não corrige dados.** Publica como está e devolve as inconformidades à secretaria.
 - **Divergência entre duas fontes oficiais** (ex.: página dos CAPS × relação em PDF do CEInfo): prevalece a publicação mais recente, e a divergência fica registrada no app, na planilha e no relatório.
 - **Só entram links com uso na aplicação** (`fontes.yaml`); os descartados ficam listados com o motivo.
