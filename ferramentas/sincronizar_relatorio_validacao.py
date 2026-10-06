@@ -103,6 +103,18 @@ def sincronizar(path: Path) -> Counter:
     validar = counts.get("A VALIDAR", 0)
     pendente = counts.get("PENDENTE", 0)
     nao_mapeado = counts.get("NÃO MAPEADO", 0)
+    desconhecidos = set(counts) - {"ADEQUADO", "A VALIDAR", "PENDENTE", "NÃO MAPEADO"}
+    if not total or desconhecidos:
+        raise RuntimeError(f"Status inesperados em Fluxos Tratados: {dict(counts)}")
+
+    resumo_path = sheets["Resumo Executivo"]
+    resumo = ET.fromstring(entries[resumo_path])
+    _set_inline(resumo, "B4", str(total))
+    _set_inline(resumo, "B5", str(adequado))
+    _set_inline(resumo, "B6", str(nao_mapeado))
+    _set_inline(resumo, "B7", str(validar))
+    _set_inline(resumo, "B8", str(pendente))
+    entries[resumo_path] = ET.tostring(resumo, encoding="utf-8", xml_declaration=True)
 
     rel_path = sheets["Relatório de Validação"]
     rel = ET.fromstring(entries[rel_path])
@@ -113,8 +125,8 @@ def sincronizar(path: Path) -> Counter:
     _set_inline(rel, "B14", f"A estrutura e a rastreabilidade estão adequadas, mas permanecem {validar} registros A VALIDAR, {pendente} PENDENTE e lacunas de base normativa que exigem decisão do departamento e/ou atualização do Banco Mestre.")
     entries[rel_path] = ET.tostring(rel, encoding="utf-8", xml_declaration=True)
 
-    if total != 114 or adequado + validar + pendente + nao_mapeado != total:
-        raise RuntimeError(f"Contagens inesperadas: {dict(counts)}")
+    if adequado + validar + pendente + nao_mapeado != total:
+        raise RuntimeError(f"Contagens inconsistentes: {dict(counts)}")
 
     with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False, dir=path.parent) as tmp:
         tmp_path = Path(tmp.name)
