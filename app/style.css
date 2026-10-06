@@ -152,3 +152,6 @@ h4.sub{margin:1.3rem 0 .3rem}
 .gcard .steps>li ul{margin:.25rem 0 0;padding-left:1.1rem}
 .gcard .steps>li>b{display:block}
 .passos-t{margin:.8rem 0 0}
+.chips.big{display:flex;flex-wrap:wrap;gap:.4rem}
+.par-t{margin:.8rem 0 .2rem;font-weight:600}
+.flow.par,.gcard.par{border-left:4px solid var(--plum-2,#7b4b94)}
