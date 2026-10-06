@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Sincronizar relatório do Guia no workspace
+        run: python ferramentas/sincronizar_relatorio_validacao.py
+      - name: Testes
+        run: pytest -q
+      - name: Rebuild da página
+        run: |
+          python ferramentas/guia_v2_para_json.py dados/Guia_de_Ofertas_Tratado_para_Validacao_V2_Escopo_Ampliado.xlsx
+          python build.py
+          cmp -s "Abordagem assistida.html" publico/index.html
+          ! grep -q "arquivo V0.8" publico/index.html
+          ! grep -q "mas o arquivo é a V0.8" publico/index.html
