@@ -543,7 +543,9 @@ function nucleoHTML({p, por}){
     <div class="u-row"><span class="k">Necessidade</span><span>${n.necessidades.map(x=>`<span class="tag" title="${esc(nomeTag(x))}">${x}</span> ${esc(NEC[x]?.nome||'')}`).join(' · ') || esc(n.necessidade_txt||'')}</span></div>
     <div class="u-row"><span class="k">Fluxo</span><span>${n.fluxos.length?n.fluxos.map(f=>`<span class="tag">${f}</span> ${esc(FLU[f]?.situacao||'')}`).join(' · '):'<span class="na">Sem fluxo específico no Banco Mestre</span>'}</span></div>
     ${S.agente==='OUTRO' ? `<div class="g-ini"><h5>Orientação inicial para ${esc(ORG[S.orgao]||'')}</h5>${po&&po.fluxo_inicial?`<p>${esc(po.fluxo_inicial)}</p><p class="src-l">Texto original da planilha, registro ${esc(po.registro)} (aba ${esc(po.orgao)}, linha ${esc(po.linha)}).</p>`:`<div class="gapbox">A planilha não tem fluxo para ${esc(ORG[S.orgao]||'este órgão')} neste público. O restante do fluxo abaixo é o mesmo para todos os órgãos.</div>`}</div>` : ''}
-    ${CAMPOS_G.map(([c,l])=>{const gs=segsDo(n,c); return `<div class="g-campo"><h5>${l}</h5>${gs.length?`<ul>${gs.map(segHTML).join('')}</ul>`:NA(l)}</div>`}).join('')}
+    <h5 class="passos-t">Passo a passo</h5>
+    <ol class="steps">${CAMPOS_G.filter(([c])=>c!=='base').map(([c,l])=>{const gs=segsDo(n,c); return `<li class="s-a"><b>${l}</b>${gs.length?`<ul>${gs.map(segHTML).join('')}</ul>`:`<div>${NA(l)}</div>`}</li>`}).join('')}</ol>
+    ${(()=>{const gs=segsDo(n,'base'); return `<div class="g-campo"><h5>Base normativa</h5>${gs.length?`<ul>${gs.map(segHTML).join('')}</ul>`:NA('Base normativa')}</div>`})()}
     ${n.nao_mapeados.length?`<div class="gapbox">Citados na planilha original, sem oferta equivalente no Banco Mestre: <b>${esc(n.nao_mapeados.join(', '))}</b>. Endereço e telefone não disponíveis.</div>`:''}
     ${ofsUnid.length?`<details class="more" open><summary>Unidades no território</summary>${unidadesHTML(ofsUnid,3)}</details>`:''}
     ${ofsSem.length?`<p class="hint">Sem unidade cadastrada no Banco Mestre: ${ofsSem.map(o=>esc(OFE[o]?.nome||o)).join(', ')}.</p>`:''}

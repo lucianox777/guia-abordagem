@@ -149,3 +149,6 @@ h4.sub{margin:1.3rem 0 .3rem}
 .g-ini{background:color-mix(in srgb,var(--plum-2) 8%,var(--card));border-left:4px solid var(--plum-2);padding:.5rem .7rem;margin:.6rem 0;border-radius:4px}
 .g-ini p{margin:.2rem 0}
 .tag{display:inline-block;font-size:.72rem;font-weight:700;padding:0 .35rem;border-radius:4px;background:var(--line);color:var(--ink);cursor:help}
+.gcard .steps>li ul{margin:.25rem 0 0;padding-left:1.1rem}
+.gcard .steps>li>b{display:block}
+.passos-t{margin:.8rem 0 0}
