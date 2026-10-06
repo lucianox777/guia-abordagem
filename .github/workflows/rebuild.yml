@@ -2,6 +2,13 @@ name: Rebuild dos artefatos
 
 on:
   workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - app/**
+      - build.py
+      - ferramentas/sincronizar_relatorio_validacao.py
+      - .github/workflows/rebuild.yml
 
 permissions:
   contents: write
