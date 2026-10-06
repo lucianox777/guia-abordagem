@@ -23,7 +23,7 @@ jobs:
       # 1) Regressão do CÓDIGO. Se falhar, o erro é nosso: nada é publicado.
       - name: Testes do coletor
         id: testes
-        run: pytest -q
+        run: python -m pytest -q
 
       # 2) Coleta + conformidade + monitoramento. Sai com 1 se a publicação for bloqueada.
       - name: Converter o Guia de Ofertas consolidado
