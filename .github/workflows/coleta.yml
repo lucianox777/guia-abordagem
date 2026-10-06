@@ -40,7 +40,7 @@ jobs:
         run: |
           git config user.name "coletor-guia"
           git config user.email "coletor-guia@users.noreply.github.com"
-          git add saida/ dados/app_base.json dados/base_unidades.json dados/guia.json publico/
+          git add saida/ dados/app_base.json dados/base_unidades.json dados/guia.json publico/ "Abordagem assistida.html"
           git diff --cached --quiet || git commit -m "Coleta automática $(date -u +%F)"
           git push
 
