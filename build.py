@@ -145,5 +145,6 @@ d = json.dumps(base, ensure_ascii=False, separators=(",", ":")).replace("</", "<
 tpl = open("app/template.html", encoding="utf-8").read()
 html = tpl.replace("/*CSS*/", open("app/style.css", encoding="utf-8").read()).replace("/*DATA*/", d).replace("/*JS*/", open("app/app.js", encoding="utf-8").read())
 os.makedirs("publico", exist_ok=True)
-open("publico/index.html", "w", encoding="utf-8").write(html)
-print("publico/index.html", round(len(html) / 1e6, 2), "MB ·", base["coleta"]["resumo"])
+for destino in ("publico/index.html", "Abordagem assistida.html"):
+    open(destino, "w", encoding="utf-8").write(html)
+print("HTML sincronizado", round(len(html) / 1e6, 2), "MB ·", base["coleta"]["resumo"])

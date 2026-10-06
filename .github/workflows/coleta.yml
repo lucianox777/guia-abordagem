@@ -23,7 +23,7 @@ jobs:
       # 1) Regressão do CÓDIGO. Se falhar, o erro é nosso: nada é publicado.
       - name: Testes do coletor
         id: testes
-        run: pytest -q
+        run: python -m pytest -q
 
       # 2) Coleta + conformidade + monitoramento. Sai com 1 se a publicação for bloqueada.
       - name: Converter o Guia de Ofertas consolidado
@@ -40,7 +40,7 @@ jobs:
         run: |
           git config user.name "coletor-guia"
           git config user.email "coletor-guia@users.noreply.github.com"
-          git add saida/ dados/app_base.json dados/base_unidades.json dados/guia.json publico/
+          git add saida/ dados/app_base.json dados/base_unidades.json dados/guia.json publico/ "Abordagem assistida.html"
           git diff --cached --quiet || git commit -m "Coleta automática $(date -u +%F)"
           git push
 
