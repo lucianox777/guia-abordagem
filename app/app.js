@@ -663,13 +663,13 @@ function renderResult(){
 /* ---------- Painel de qualidade da base ---------- */
 (function(){
   const a=D.statsAll, p=x=>Math.round(100*x/a.total)+'%';
-  $('#qual').innerHTML = `<h3>Qualidade da base (Banco Mestre, arquivo V0.8)</h3><ul>
+  $('#qual').innerHTML = `<h3>Qualidade da base (Banco Mestre${D.versao?' · '+esc(D.versao):''})</h3><ul>
    <li><b>${a.total.toLocaleString('pt-BR')}</b> unidades cadastradas. Nenhuma está "VERIFICADA": ${a.emVal.toLocaleString('pt-BR')} estão em validação e ${a.naoConf.toLocaleString('pt-BR')} não foram confirmadas.</li>
    <li>${a.semDist.toLocaleString('pt-BR')} (${p(a.semDist)}) estão sem distrito, e ${a.semSub.toLocaleString('pt-BR')} (${p(a.semSub)}) estão sem subprefeitura.</li>
    <li>Só ${a.comHor} (${p(a.comHor)}) têm horário de funcionamento. ${a.semTel.toLocaleString('pt-BR')} (${p(a.semTel)}) estão sem telefone.</li>
    <li>${a.tel2696.toLocaleString('pt-BR')} unidades compartilham o mesmo telefone, (11) 2696-3200.</li>
    <li>Sem nenhuma unidade cadastrada: CPAS, Central de Vagas, Consultório na Rua, NCA, Casa Temporária, Centro POP, Ministério Público, Defensoria, Vara da Infância, delegacias e PPCAAM.</li>
-   <li>O painel da planilha diz "${esc(D.versao||'')}", mas o arquivo é a V0.8.</li></ul>
+   <li>Versão declarada no painel do Banco Mestre: <b>${esc(D.versao||'não informada')}</b>.</li></ul>
    <h3>Fontes oficiais lidas pelo job</h3>
    <p>Última coleta: ${fdata(C.data_coleta)||'nenhuma'}${C.modo==='offline'?' (teste com páginas salvas)':''}. A evidência de cada dado é a página oficial, com a data em que a secretaria a atualizou e a data em que o job a leu. Só é reprocessado o que mudou. O job não corrige dados: publica como está e devolve as inconformidades à secretaria.</p>
    <div class="tw"><table class="rt"><thead><tr><th>Serviço</th><th>Total declarado</th><th>Lidas</th><th>Páginas</th></tr></thead><tbody>
