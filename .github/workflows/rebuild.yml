@@ -33,6 +33,8 @@ jobs:
           git config user.email "guia-rebuild@users.noreply.github.com"
           git add dados/Guia_de_Ofertas_Tratado_para_Validacao_V2_Escopo_Ampliado.xlsx \
                   Guia_de_Ofertas_Tratado_para_Validacao_V2_Escopo_Ampliado.xlsx \
-                  dados/guia.json publico/index.html "Abordagem assistida.html"
+                  dados/guia.json dados/app_base.json dados/base_unidades.json \
+                  saida/Banco_Mestre_Unidades_atualizado.xlsx \
+                  publico/index.html "Abordagem assistida.html"
           git diff --cached --quiet || git commit -m "Rebuild dos artefatos do Guia"
           git push
